@@ -4,7 +4,7 @@ var gainNodes = [];
 
 for (let i = 1; i < 9; i++) {
     var newAudio = document.createElement("audio")
-    newAudio.crossOrigin = "anonymous";
+    // newAudio.crossOrigin = "anonymous";
     newAudio.id = "player" + i
     newAudio.controls = "controls"
     newAudio.autoplay = "autoplay"
