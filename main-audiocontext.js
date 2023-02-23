@@ -1,4 +1,6 @@
+const audioCtx = new AudioContext();
 var players = document.getElementById("players")
+var gainNodes = [];
 
 for (let i = 1; i < 9; i++) {
     var newAudio = document.createElement("audio")
@@ -8,29 +10,19 @@ for (let i = 1; i < 9; i++) {
     newAudio.autoplay = "autoplay"
     newAudio.preload = ""
     players.appendChild(newAudio)
-    
 
-    
-
-    var newVolume = document.createElement("input")
-    newVolume.type =  "range" 
-    newVolume.min =  0
-    newVolume.max =  1 
-    newVolume.step = 0.01
-    newVolume.id =  "volume" + i
-    players.appendChild(newVolume)
-
-    var newGap = document.createElement("br")
-    players.appendChild(newGap)
+    // Create a MediaElementAudioSourceNode
+    // Feed the HTMLMediaElement into it
+    const source = audioCtx.createMediaElementSource(newAudio);
+    // create and connect gain node
+    gainNodes[i] = audioCtx.createGain()
+    gainNodes[i].gain.setValueAtTime(.5, audioCtx.currentTime)
+    source.connect(gainNodes[i]);
+    gainNodes[i].connect(audioCtx.destination);
 
     var newListing = document.createElement("p")
     newListing.id = "currentstation" + i
     players.appendChild(newListing)
-
-    var newGap = document.createElement("br")
-    players.appendChild(newGap)
-
-    
 }
 
 
@@ -67,27 +59,15 @@ function randomStation() {
     url = stationchoice[number]
     document.url = url
     let playerid = 1 + getRandomInt(8)
-    let playername = "player" + playerid
-    console.log(playername)
+    console.log("player" + playerid)
     webradio.play_station(playerid, url)
-    let currentVol =  document.getElementById(playername).volume
-    let randVol = getRandomInt(40) * .003
-    volume(playername, randVol)
-    ramp(currentVol, randVol, 10, playerid)
-    // let gain = gainNodes[playerid].gain
-    // gain.setValueAtTime(0.05, audioCtx.currentTime)
-    // gain.exponentialRampToValueAtTime(.6, audioCtx.currentTime + 15)
+    let gain = gainNodes[playerid].gain
+    gain.setValueAtTime(0.05, audioCtx.currentTime)
+    gain.exponentialRampToValueAtTime(.6, audioCtx.currentTime + 15)
     let station = "currentstation" + playerid
     document.getElementById(station).textContent = "playing from " + url
 }
 
-function volume(element, volume) {
-    
-    console.log(element)
-    let player = document.getElementById(element)
-    // console.log(player)
-    player.volume = volume
-}
 
 function changeSpeed(index, speed) {
     var playername = "player" + index
@@ -96,28 +76,6 @@ function changeSpeed(index, speed) {
     player.playbackRate = speed
 
 }
-
-async function ramp(currentValue, endValue, time, playerid) {
-    let currentTime = 0 
-    let timeGrain = .05
-    let steps = time / timeGrain
-    let change = endValue - currentValue
-    for (let i = 0; i < steps; i++) {
-        await new Promise(resolve => setTimeout(() => {
-            currentValue = currentValue + (change / steps)
-            console.log("volume_" + playerid, currentValue)
-            volume("player" + playerid, currentValue)
-            let volumeid = "volume" + playerid
-            document.getElementById(volumeid).value = currentValue
-            resolve();
-          }, (timeGrain * 1000)));
-        }
-
-
-
-}
-
-
 
 
 
