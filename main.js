@@ -1,6 +1,7 @@
 var players = document.getElementById("players")
 
 for (let i = 1; i < 9; i++) {
+
     var newAudio = document.createElement("audio")
     newAudio.crossOrigin = "anonymous";
     newAudio.id = "player" + i
@@ -10,8 +11,7 @@ for (let i = 1; i < 9; i++) {
     players.appendChild(newAudio)
     
 
-    
-
+    // volume slider with all relevant attributes (for visual feedback only)
     var newVolume = document.createElement("input")
     newVolume.type =  "range" 
     newVolume.min =  0
@@ -23,6 +23,7 @@ for (let i = 1; i < 9; i++) {
     var newGap = document.createElement("br")
     players.appendChild(newGap)
 
+    // insertion point for the radio URL display
     var newListing = document.createElement("p")
     newListing.id = "currentstation" + i
     players.appendChild(newListing)
@@ -73,7 +74,8 @@ function randomStation() {
     let currentVol =  document.getElementById(playername).volume
     let randVol = getRandomInt(40) * .003
     volume(playername, randVol)
-    ramp(currentVol, randVol, 10, playerid)
+    let ramptime = getRandomInt(10) + 6
+    ramp(currentVol, randVol, ramptime, playerid)
     // let gain = gainNodes[playerid].gain
     // gain.setValueAtTime(0.05, audioCtx.currentTime)
     // gain.exponentialRampToValueAtTime(.6, audioCtx.currentTime + 15)
@@ -102,14 +104,17 @@ async function ramp(currentValue, endValue, time, playerid) {
     let timeGrain = .05
     let steps = time / timeGrain
     let change = endValue - currentValue
+
     for (let i = 0; i < steps; i++) {
+
         await new Promise(resolve => setTimeout(() => {
-            currentValue = currentValue + (change / steps)
-            console.log("volume_" + playerid, currentValue)
-            volume("player" + playerid, currentValue)
-            let volumeid = "volume" + playerid
-            document.getElementById(volumeid).value = currentValue
-            resolve();
+                
+                currentValue = currentValue + (change * (i / steps) * (i / steps))
+                console.log("volume_" + playerid, currentValue)
+                volume("player" + playerid, currentValue)
+                let volumeid = "volume" + playerid
+                document.getElementById(volumeid).value = currentValue
+                resolve();
           }, (timeGrain * 1000)));
         }
 
