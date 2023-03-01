@@ -9,6 +9,23 @@ for (let i = 1; i < 9; i++) {
     newAudio.controls = "controls"
     newAudio.autoplay = "autoplay"
     newAudio.preload = ""
+
+     // error handling below - prevents silence by setting up EventListener to catch errors when file fails to load from randomStation(), and then calls the randomStation() function again
+     newAudio.addEventListener('error', function failed(e) {
+        // audio playback failed - show a message saying why
+        // to get the source of the audio element use $(this).src
+        switch (e.target.error.code) {
+          case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: // rescues the audio when the CORS or GET errors happen
+            console.log('The video audio not be loaded, either because the server or network failed or because the format is not supported.');
+            console.log("error", e.target.id)
+            randomStation(e.target.id.replace('player',''))
+            break;
+          default:
+            console.log('An unknown error occurred.');
+            break;
+        }
+      }, false);
+
     players.appendChild(newAudio)
 
     // Create a MediaElementAudioSourceNode
@@ -25,7 +42,7 @@ for (let i = 1; i < 9; i++) {
     // create and connect gain node
     gainNodes[i] = audioCtx.createGain()
     gainNodes[i].gain.setValueAtTime(.5, audioCtx.currentTime)
-    source.connect(gainNodes[i]); // output channel also specified
+    source.connect(gainNodes[i]); // output channel also specified - offset by 2 to avoid playing out the main stereo output
     //gainNodes[i].connect(audioCtx.destination); 
     gainNodes[i].connect(merger, 0, i) // connect to merger instead of destination, assigning output channel
     var newListing = document.createElement("p")
@@ -56,7 +73,7 @@ for (let i = 1; i < 9; i++) {
 // }, false)
 
 
-function randomStation() {
+function randomStation(playerid) {
     let stationchoice = frenchStations
 
     const rand = Math.random() < 0.5
@@ -66,7 +83,7 @@ function randomStation() {
     let number = getRandomInt(stationchoice.length)
     url = stationchoice[number]
     document.url = url
-    let playerid = 1 + getRandomInt(8)
+    // let playerid = 1 + getRandomInt(8)
     console.log("player" + playerid)
     webradio.play_station(playerid, url)
     let gain = gainNodes[playerid].gain

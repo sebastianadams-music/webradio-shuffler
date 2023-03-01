@@ -8,6 +8,22 @@ for (let i = 1; i < 9; i++) {
     newAudio.controls = "controls"
     newAudio.autoplay = "autoplay"
     newAudio.preload = ""
+    
+    // error handling below - prevents silence by setting up EventListener to catch errors when file fails to load from randomStation(), and then calls the randomStation() function again
+    newAudio.addEventListener('error', function failed(e) {
+        // audio playback failed - show a message saying why
+        // to get the source of the audio element use $(this).src
+        switch (e.target.error.code) {
+          case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: // rescues the audio when the CORS or GET errors happen
+            console.log('The video audio not be loaded, either because the server or network failed or because the format is not supported.');
+            console.log("error", e.target.id)
+            randomStation(e.target.id.replace('player',''))
+            break;
+          default:
+            console.log('An unknown error occurred.');
+            break;
+        }
+      }, false);
     players.appendChild(newAudio)
     
 
@@ -57,7 +73,7 @@ for (let i = 1; i < 9; i++) {
 // }, false)
 
 
-function randomStation() {
+function randomStation(playerid) {
     let stationchoice = frenchStations
 
     const rand = Math.random() < 0.5
@@ -67,10 +83,10 @@ function randomStation() {
     let number = getRandomInt(stationchoice.length)
     url = stationchoice[number]
     document.url = url
-    let playerid = 1 + getRandomInt(8)
+    // let playerid = 1 + getRandomInt(8)
     let playername = "player" + playerid
     console.log(playername)
-    webradio.play_station(playerid, url)
+    webradio.play_station(playerid, url) 
     let currentVol =  document.getElementById(playername).volume
     let randVol = getRandomInt(40) * .003
     volume(playername, randVol)
@@ -85,7 +101,7 @@ function randomStation() {
 
 function volume(element, volume) {
     
-    console.log(element)
+    // console.log(element)
     let player = document.getElementById(element)
     // console.log(player)
     player.volume = volume
@@ -109,8 +125,8 @@ async function ramp(currentValue, endValue, time, playerid) {
 
         await new Promise(resolve => setTimeout(() => {
                 
-                currentValue = currentValue + (change * (i / steps) * (i / steps))
-                console.log("volume_" + playerid, currentValue)
+                currentValue = currentValue + (change * (i / steps) * (i / steps)) // exponential ramp (I hope lol)
+                // console.log("volume_" + playerid, currentValue)
                 volume("player" + playerid, currentValue)
                 let volumeid = "volume" + playerid
                 document.getElementById(volumeid).value = currentValue
